@@ -64,6 +64,10 @@ class RzIconTextFormField extends StatelessWidget {
     this.borderRadius,
     this.borderColor,
     this.focusedBorderColor,
+    this.errorBorderColor,
+    this.focusedErrorBorderColor,
+    this.errorBorderWidth,
+    this.focusedErrorBorderWidth,
     this.fillColor,
     this.filled = false,
 
@@ -78,7 +82,7 @@ class RzIconTextFormField extends StatelessWidget {
     // Validation
     this.validator,
     this.onSaved,
-    this.autovalidateMode,
+    this.autoValidateMode,
 
     // Events
     this.onChanged,
@@ -169,9 +173,13 @@ class RzIconTextFormField extends StatelessWidget {
   //------------------------------------------------------------------------
 
   final EdgeInsetsGeometry? contentPadding;
-  final BorderRadius? borderRadius;
+  final dynamic borderRadius;
   final Color? borderColor;
   final Color? focusedBorderColor;
+  final Color? errorBorderColor;
+  final Color? focusedErrorBorderColor;
+  final double? errorBorderWidth;
+  final double? focusedErrorBorderWidth;
   final Color? fillColor;
   final bool filled;
 
@@ -195,7 +203,7 @@ class RzIconTextFormField extends StatelessWidget {
 
   final FormFieldValidator<String>? validator;
   final FormFieldSetter<String>? onSaved;
-  final AutovalidateMode? autovalidateMode;
+  final AutovalidateMode? autoValidateMode;
 
   //------------------------------------------------------------------------
   // Events
@@ -253,9 +261,22 @@ class RzIconTextFormField extends StatelessWidget {
     );
   }
 
+  BorderRadius _parseBorderRadius() {
+    if (borderRadius == null) {
+      return BorderRadius.zero;
+    }
+    if (borderRadius is BorderRadius) {
+      return borderRadius as BorderRadius;
+    }
+    if (borderRadius is num) {
+      return BorderRadius.circular((borderRadius as num).toDouble());
+    }
+    return BorderRadius.zero;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final radius = borderRadius ?? BorderRadius.circular(12);
+    final radius = _parseBorderRadius();
 
     return TextFormField(
       controller: controller,
@@ -290,7 +311,7 @@ class RzIconTextFormField extends StatelessWidget {
 
       validator: validator,
       onSaved: onSaved,
-      autovalidateMode: autovalidateMode,
+      autovalidateMode: autoValidateMode,
 
       onChanged: onChanged,
       onTap: onTap,
@@ -348,14 +369,17 @@ class RzIconTextFormField extends StatelessWidget {
 
         errorBorder: OutlineInputBorder(
           borderRadius: radius,
-          borderSide: const BorderSide(color: Colors.red),
+          borderSide: BorderSide(
+            color: errorBorderColor ?? Colors.red,
+            width: errorBorderWidth ?? 1.0,
+          ),
         ),
 
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: radius,
-          borderSide: const BorderSide(
-            color: Colors.red,
-            width: 1.5,
+          borderSide: BorderSide(
+            color: focusedErrorBorderColor ?? Colors.red,
+            width: focusedErrorBorderWidth ?? 1.5,
           ),
         ),
       ),
