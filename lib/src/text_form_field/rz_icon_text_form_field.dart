@@ -1,65 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class RzIconTextFormField extends StatelessWidget {
+class RzIconTextFormField extends StatefulWidget {
   const RzIconTextFormField({
     super.key,
-
-    // Controller
     this.controller,
     this.focusNode,
     this.initialValue,
-
-    // Text
     this.hintText,
     this.labelText,
     this.helperText,
     this.errorText,
-
-    // Icons (Widget)
     this.prefix,
     this.suffix,
     this.prefixIcon,
     this.suffixIcon,
-
-    // Icons (IconData)
     this.prefixIconData,
     this.suffixIconData,
     this.prefixIconColor,
     this.suffixIconColor,
     this.prefixIconSize = 22,
     this.suffixIconSize = 22,
-
-    // Icon Click
     this.onPrefixIconTap,
     this.onSuffixIconTap,
-
-    // Style
     this.style,
     this.hintStyle,
     this.labelStyle,
-
-    // Keyboard
     this.keyboardType,
     this.textInputAction,
     this.textCapitalization = TextCapitalization.none,
     this.textAlign = TextAlign.start,
-
-    // State
     this.enabled = true,
     this.readOnly = false,
     this.autofocus = false,
     this.obscureText = false,
     this.enableSuggestions = true,
     this.autocorrect = true,
-
-    // Lines
     this.maxLines = 1,
     this.minLines,
     this.maxLength,
     this.expands = false,
-
-    // Border
     this.contentPadding,
     this.borderRadius,
     this.borderColor,
@@ -70,108 +50,61 @@ class RzIconTextFormField extends StatelessWidget {
     this.focusedErrorBorderWidth,
     this.fillColor,
     this.filled = false,
-
-    // Cursor
     this.cursorColor,
     this.cursorHeight,
     this.cursorWidth = 2,
-
-    // Formatter
     this.inputFormatters,
-
-    // Validation
     this.validator,
     this.onSaved,
     this.autoValidateMode,
-
-    // Events
     this.onChanged,
     this.onTap,
     this.onEditingComplete,
     this.onFieldSubmitted,
     this.onTapOutside,
-  });
 
-  //------------------------------------------------------------------------
-  // Controller
-  //------------------------------------------------------------------------
+    // Hint behaviors
+    this.hideHintOnFocus = false,
+    this.floatHintToBorder = false,
+    this.floatingLabelBehavior = FloatingLabelBehavior.auto,
+  });
 
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final String? initialValue;
-
-  //------------------------------------------------------------------------
-  // Text
-  //------------------------------------------------------------------------
-
   final String? hintText;
   final String? labelText;
   final String? helperText;
   final String? errorText;
-
-  //------------------------------------------------------------------------
-  // Icons
-  //------------------------------------------------------------------------
-
   final Widget? prefix;
   final Widget? suffix;
-
   final Widget? prefixIcon;
   final Widget? suffixIcon;
-
   final IconData? prefixIconData;
   final IconData? suffixIconData;
-
   final Color? prefixIconColor;
   final Color? suffixIconColor;
-
   final double prefixIconSize;
   final double suffixIconSize;
-
   final VoidCallback? onPrefixIconTap;
   final VoidCallback? onSuffixIconTap;
-
-  //------------------------------------------------------------------------
-  // Style
-  //------------------------------------------------------------------------
-
   final TextStyle? style;
   final TextStyle? hintStyle;
   final TextStyle? labelStyle;
-
-  //------------------------------------------------------------------------
-  // Keyboard
-  //------------------------------------------------------------------------
-
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final TextCapitalization textCapitalization;
   final TextAlign textAlign;
-
-  //------------------------------------------------------------------------
-  // State
-  //------------------------------------------------------------------------
-
   final bool enabled;
   final bool readOnly;
   final bool autofocus;
   final bool obscureText;
   final bool enableSuggestions;
   final bool autocorrect;
-
-  //------------------------------------------------------------------------
-  // Lines
-  //------------------------------------------------------------------------
-
   final int? maxLines;
   final int? minLines;
   final int? maxLength;
   final bool expands;
-
-  //------------------------------------------------------------------------
-  // Border
-  //------------------------------------------------------------------------
-
   final EdgeInsetsGeometry? contentPadding;
   final dynamic borderRadius;
   final Color? borderColor;
@@ -182,207 +115,192 @@ class RzIconTextFormField extends StatelessWidget {
   final double? focusedErrorBorderWidth;
   final Color? fillColor;
   final bool filled;
-
-  //------------------------------------------------------------------------
-  // Cursor
-  //------------------------------------------------------------------------
-
   final Color? cursorColor;
   final double? cursorHeight;
   final double cursorWidth;
-
-  //------------------------------------------------------------------------
-  // Formatter
-  //------------------------------------------------------------------------
-
   final List<TextInputFormatter>? inputFormatters;
-
-  //------------------------------------------------------------------------
-  // Validation
-  //------------------------------------------------------------------------
-
   final FormFieldValidator<String>? validator;
   final FormFieldSetter<String>? onSaved;
   final AutovalidateMode? autoValidateMode;
-
-  //------------------------------------------------------------------------
-  // Events
-  //------------------------------------------------------------------------
-
   final ValueChanged<String>? onChanged;
   final GestureTapCallback? onTap;
   final VoidCallback? onEditingComplete;
   final ValueChanged<String>? onFieldSubmitted;
   final TapRegionCallback? onTapOutside;
+  final bool hideHintOnFocus;
+  final bool floatHintToBorder;
+  final FloatingLabelBehavior floatingLabelBehavior;
+
+  @override
+  State<RzIconTextFormField> createState() => _RzIconTextFormFieldState();
+}
+
+class _RzIconTextFormFieldState extends State<RzIconTextFormField> {
+  late FocusNode _effectiveFocusNode;
+  bool _isInternalNode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initFocusNode();
+  }
+
+  void _initFocusNode() {
+    if (widget.focusNode != null) {
+      _effectiveFocusNode = widget.focusNode!;
+      _isInternalNode = false;
+    } else {
+      _effectiveFocusNode = FocusNode();
+      _isInternalNode = true;
+    }
+    _effectiveFocusNode.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    if (widget.hideHintOnFocus || widget.floatHintToBorder) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant RzIconTextFormField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusNode != widget.focusNode) {
+      oldWidget.focusNode?.removeListener(_onFocusChange);
+      _effectiveFocusNode.removeListener(_onFocusChange);
+      if (_isInternalNode) _effectiveFocusNode.dispose();
+      _initFocusNode();
+    }
+  }
+
+  @override
+  void dispose() {
+    _effectiveFocusNode.removeListener(_onFocusChange);
+    if (_isInternalNode) _effectiveFocusNode.dispose();
+    super.dispose();
+  }
 
   Widget? _buildPrefixIcon() {
-    if (prefixIcon != null) return prefixIcon;
-
-    if (prefixIconData == null) return null;
-
-    if (onPrefixIconTap != null) {
+    if (widget.prefixIcon != null) return widget.prefixIcon;
+    if (widget.prefixIconData == null) return null;
+    if (widget.onPrefixIconTap != null) {
       return IconButton(
-        onPressed: onPrefixIconTap,
-        icon: Icon(
-          prefixIconData,
-          size: prefixIconSize,
-          color: prefixIconColor,
-        ),
+        onPressed: widget.onPrefixIconTap,
+        icon: Icon(widget.prefixIconData, size: widget.prefixIconSize, color: widget.prefixIconColor),
       );
     }
-
-    return Icon(
-      prefixIconData,
-      size: prefixIconSize,
-      color: prefixIconColor,
-    );
+    return Icon(widget.prefixIconData, size: widget.prefixIconSize, color: widget.prefixIconColor);
   }
 
   Widget? _buildSuffixIcon() {
-    if (suffixIcon != null) return suffixIcon;
-
-    if (suffixIconData == null) return null;
-
-    if (onSuffixIconTap != null) {
+    if (widget.suffixIcon != null) return widget.suffixIcon;
+    if (widget.suffixIconData == null) return null;
+    if (widget.onSuffixIconTap != null) {
       return IconButton(
-        onPressed: onSuffixIconTap,
-        icon: Icon(
-          suffixIconData,
-          size: suffixIconSize,
-          color: suffixIconColor,
-        ),
+        onPressed: widget.onSuffixIconTap,
+        icon: Icon(widget.suffixIconData, size: widget.suffixIconSize, color: widget.suffixIconColor),
       );
     }
-
-    return Icon(
-      suffixIconData,
-      size: suffixIconSize,
-      color: suffixIconColor,
-    );
+    return Icon(widget.suffixIconData, size: widget.suffixIconSize, color: widget.suffixIconColor);
   }
 
   BorderRadius _parseBorderRadius() {
-    if (borderRadius == null) {
-      return BorderRadius.zero;
-    }
-    if (borderRadius is BorderRadius) {
-      return borderRadius as BorderRadius;
-    }
-    if (borderRadius is num) {
-      return BorderRadius.circular((borderRadius as num).toDouble());
-    }
+    if (widget.borderRadius == null) return BorderRadius.circular(8);
+    if (widget.borderRadius is BorderRadius) return widget.borderRadius as BorderRadius;
+    if (widget.borderRadius is num) return BorderRadius.circular((widget.borderRadius as num).toDouble());
     return BorderRadius.zero;
   }
 
   @override
   Widget build(BuildContext context) {
     final radius = _parseBorderRadius();
+    final hasFocus = _effectiveFocusNode.hasFocus;
+
+    // ---- HINT / LABEL LOGIC ----
+    String? effectiveHint;
+    String? effectiveLabel;
+
+    if (widget.floatHintToBorder && hasFocus && widget.hintText != null && widget.labelText == null) {
+      // only hint provided -> make it float to border
+      effectiveLabel = widget.hintText;
+      effectiveHint = null;
+    } else if (widget.floatHintToBorder && !hasFocus && widget.hintText != null && widget.labelText == null) {
+      // unfocused -> show as normal hint
+      effectiveLabel = null;
+      effectiveHint = widget.hintText;
+    } else if (widget.floatHintToBorder && widget.labelText != null) {
+      // both label and hint provided -> on focus hint hide, label stays
+      effectiveLabel = widget.labelText;
+      effectiveHint = hasFocus ? null : widget.hintText;
+      if (widget.hideHintOnFocus && hasFocus) effectiveHint = null;
+    } else {
+      // normal hideHintOnFocus logic
+      effectiveLabel = widget.labelText;
+      effectiveHint = (widget.hideHintOnFocus && hasFocus) ? null : widget.hintText;
+    }
 
     return TextFormField(
-      controller: controller,
-      focusNode: focusNode,
-      initialValue: controller == null ? initialValue : null,
-
-      keyboardType: keyboardType,
-      textInputAction: textInputAction,
-      textCapitalization: textCapitalization,
-      textAlign: textAlign,
-
-      enabled: enabled,
-      readOnly: readOnly,
-      autofocus: autofocus,
-
-      obscureText: obscureText,
-      enableSuggestions: enableSuggestions,
-      autocorrect: autocorrect,
-
-      maxLines: expands ? null : maxLines,
-      minLines: expands ? null : minLines,
-      maxLength: maxLength,
-      expands: expands,
-
-      style: style ?? const TextStyle(fontSize: 14),
-
-      cursorColor: cursorColor,
-      cursorHeight: cursorHeight,
-      cursorWidth: cursorWidth,
-
-      inputFormatters: inputFormatters,
-
-      validator: validator,
-      onSaved: onSaved,
-      autovalidateMode: autoValidateMode,
-
-      onChanged: onChanged,
-      onTap: onTap,
-      onEditingComplete: onEditingComplete,
-      onFieldSubmitted: onFieldSubmitted,
-      onTapOutside: onTapOutside,
-
+      controller: widget.controller,
+      focusNode: _effectiveFocusNode,
+      initialValue: widget.controller == null ? widget.initialValue : null,
+      keyboardType: widget.keyboardType,
+      textInputAction: widget.textInputAction,
+      textCapitalization: widget.textCapitalization,
+      textAlign: widget.textAlign,
+      enabled: widget.enabled,
+      readOnly: widget.readOnly,
+      autofocus: widget.autofocus,
+      obscureText: widget.obscureText,
+      enableSuggestions: widget.enableSuggestions,
+      autocorrect: widget.autocorrect,
+      maxLines: widget.expands ? null : widget.maxLines,
+      minLines: widget.expands ? null : widget.minLines,
+      maxLength: widget.maxLength,
+      expands: widget.expands,
+      style: widget.style ?? const TextStyle(fontSize: 14),
+      cursorColor: widget.cursorColor,
+      cursorHeight: widget.cursorHeight,
+      cursorWidth: widget.cursorWidth,
+      inputFormatters: widget.inputFormatters,
+      validator: widget.validator,
+      onSaved: widget.onSaved,
+      autovalidateMode: widget.autoValidateMode,
+      onChanged: widget.onChanged,
+      onTap: widget.onTap,
+      onEditingComplete: widget.onEditingComplete,
+      onFieldSubmitted: widget.onFieldSubmitted,
+      onTapOutside: widget.onTapOutside,
       decoration: InputDecoration(
-        hintText: hintText,
-        labelText: labelText,
-        helperText: helperText,
-        errorText: errorText,
-
-        hintStyle: hintStyle,
-        labelStyle: labelStyle,
-
-        prefix: prefix,
-        suffix: suffix,
-
+        hintText: effectiveHint,
+        labelText: effectiveLabel,
+        helperText: widget.helperText,
+        errorText: widget.errorText,
+        hintStyle: widget.hintStyle,
+        labelStyle: widget.labelStyle,
+        floatingLabelBehavior: widget.floatingLabelBehavior,
+        prefix: widget.prefix,
+        suffix: widget.suffix,
         prefixIcon: _buildPrefixIcon(),
         suffixIcon: _buildSuffixIcon(),
-
-        filled: filled,
-        fillColor: fillColor,
+        filled: widget.filled,
+        fillColor: widget.fillColor,
         isDense: true,
-
-        contentPadding: contentPadding ??
-            const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-
-        border: OutlineInputBorder(
-          borderRadius: radius,
-          borderSide: BorderSide(
-            color: borderColor ?? Colors.grey,
-          ),
-        ),
-
-        enabledBorder: OutlineInputBorder(
-          borderRadius: radius,
-          borderSide: BorderSide(
-            color: borderColor ?? Colors.grey,
-          ),
-        ),
-
-        focusedBorder: OutlineInputBorder(
-          borderRadius: radius,
-          borderSide: BorderSide(
-            color: focusedBorderColor ??
-                Theme.of(context).colorScheme.primary,
-            width: 1.5,
-          ),
-        ),
-
-        errorBorder: OutlineInputBorder(
-          borderRadius: radius,
-          borderSide: BorderSide(
-            color: errorBorderColor ?? Colors.red,
-            width: errorBorderWidth ?? 1.0,
-          ),
-        ),
-
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: radius,
-          borderSide: BorderSide(
-            color: focusedErrorBorderColor ?? Colors.red,
-            width: focusedErrorBorderWidth ?? 1.5,
-          ),
-        ),
+        contentPadding: widget.contentPadding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        border: OutlineInputBorder(borderRadius: radius, borderSide: BorderSide(color: widget.borderColor ?? Colors.grey)),
+        enabledBorder: OutlineInputBorder(borderRadius: radius, borderSide: BorderSide(color: widget.borderColor ?? Colors.grey)),
+        focusedBorder: OutlineInputBorder(borderRadius: radius, borderSide: BorderSide(color: widget.focusedBorderColor ?? Theme.of(context).colorScheme.primary, width: 1.5)),
+        errorBorder: OutlineInputBorder(borderRadius: radius, borderSide: BorderSide(color: widget.errorBorderColor ?? Colors.red, width: widget.errorBorderWidth ?? 1.0)),
+        focusedErrorBorder: OutlineInputBorder(borderRadius: radius, borderSide: BorderSide(color: widget.focusedErrorBorderColor ?? Colors.red, width: widget.focusedErrorBorderWidth ?? 1.5)),
       ),
     );
   }
 }
+
+/*
+RzIconTextFormField(
+prefixIcon: Icon(Iconsax.search_normal),
+hintText: "Search...",
+borderRadius: BorderRadius.circular(500),
+hideHintOnFocus: false,
+floatHintToBorder: false,
+),*/
